@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="jp">
+    <link rel="stylesheet" type="text/css" href="chatapp.css">
+<head>
+        <title>Firebase Authentication sample 01</title>
+        <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+        <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易チャットアプリ</title>
+</head>
+
+<h1>簡易チャットアプリ</h1>
+
+<body>
+
+    <p id="uid"><img src="../js03/imgs/buke.png"> Loading...</p>
+    <button id="login" class="hidden">login</button>
+    <button id="logout" class="hidden">logout</button>
+    
+    <div>
+
+      <div id="output"></div>
+    
+    </div>
+    
+<div id="input-field">
+    名前：<input type="text" id="username"><div>
+        <div>
+
+<div id="input-field">
+<textarea id="text" cols="30" rows="10"></textarea>
+<input type= "button" value= "Send" id= "send" onclick= "btnFunc()">
+<span id="view_time"></span>
+</div> 
+
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- JQuery -->
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdlXhV4SRwADapRiS_aKmz_NsXzVElG40",
+    authDomain: "chat-app-53c30.firebaseapp.com",
+    databaseURL: "https://chat-app-53c30.firebaseio.com",
+    projectId: "chat-app-53c30",
+    storageBucket: "chat-app-53c30.appspot.com",
+    messagingSenderId: "1044977150835",
+    appId: "1:1044977150835:web:c07487759a9d7891d73306"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const ref = firebase.database().ref();
+
+//時間の挿入
+document.getElementById("view_time").innerHTML = getNow();
+
+function getNow() {
+	var now = new Date();
+	// var year = now.getFullYear();
+	var mon = now.getMonth()+1; 
+	var day = now.getDate();
+	var hour = now.getHours();
+	var min = now.getMinutes();
+	//出力用 year + "年" + 
+	var s = mon + "月" + day + "日" + hour + "時" + min + "分" ; 
+	return s;
+}
+
+//   文字を送信
+function send(){
+    const username = $("#username").val();
+    const text = $("#text").val();
+    const time = getNow();
+    const msg = {
+    username:username,
+    text:text,
+    time:time
+    }
+    ref.push(msg);
+  };
+
+    $("#send").on("click",function(){
+    send()
+    const p = $("#output");
+    p.scrollTop(
+    p[0].scrollHeight - p.height()
+         );
+
+    });
+
+
+//ログイン機能
+const auth = firebase.auth()
+const login = document.getElementById('login')
+const logout = document.getElementById('logout')
+login.addEventListener('click', () => auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()))
+logout.addEventListener('click', () => auth.signOut())
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    login.classList.add('hidden')
+    logout.classList.remove('hidden')
+    uid.textContent = `${user.displayName}でログイン中`
+  } else {
+    login.classList.remove('hidden')
+    logout.classList.add('hidden')
+    uid.textContent = 'ログアウト中'
+  }
+})
+
+//受信処理
+ref.on("child_added",function(data){
+const v = data.val();//送信されたオブジェクトを取得
+const k = data.key;//ユニークキーの取得
+const h ='<p>'+v.username+'<br>'+v.text+'<br>'+v.time+'</p>';
+$("#output").append(h);
+});
+
+</script>
+
+    
+</body>
+</html>
